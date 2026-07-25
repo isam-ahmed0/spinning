@@ -26,7 +26,9 @@ async function getNekoGif(action) {
   try {
     const endpoint = nekoEndpoints[action];
     if (!endpoint) return null;
-    const response = await axios.get(`https://nekos.best/api/v2/${endpoint}`);
+    const response = await axios.get(`https://nekos.best/api/v2/${endpoint}`, {
+      headers: { 'User-Agent': 'SpinningApple/1.0' }
+    });
     if (response.data.results && response.data.results.length > 0) {
       return response.data.results[0].url;
     }

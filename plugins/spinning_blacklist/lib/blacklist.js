@@ -25,8 +25,7 @@ const blacklistSlashCmds = [
       { type: 'string', name: 'reason', description: 'Reason for blacklisting', required: false }
     ],
     async execute(interaction, runtime) {
-      const ownerId = runtime.config?.owner_id;
-      if (interaction.user.id !== ownerId) {
+      if (!V2.isOwner(interaction.member, runtime)) {
         return V2.reply(interaction, V2.error('Only the bot owner can manage blacklists.'), true);
       }
 

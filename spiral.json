@@ -8,5 +8,6 @@
   "perGuildSlash": false,
   "owner_id": "",
   "groq_api_key": "",
-  "serpapi_key": ""
+  "serpapi_key": "",
+  "imgbb_api_key": ""
 }

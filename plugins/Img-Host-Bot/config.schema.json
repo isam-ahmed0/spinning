@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ImgHost Config",
+  "type": "object",
+  "properties": {
+    "imgbb_api_key": {
+      "type": "string",
+      "default": "",
+      "description": "imgbb API key for image uploads"
+    }
+  }
+}
