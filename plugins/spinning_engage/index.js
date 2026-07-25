@@ -7,6 +7,7 @@ const { checkFlood } = require('./lib/antiraid');
 
 const db = new Database();
 const levelsTable = new Table(db, 'levels');
+const warningsTable = new Table(db, 'warnings');
 const xpCooldowns = new Map();
 
 const engageSlashCmds = [
@@ -31,7 +32,6 @@ function handleXpGain(message, runtime) {
   const max = config.xp_max || 35;
   const xpGain = Math.floor(Math.random() * (max - min + 1)) + min;
 
-  const key = `${message.author.id}.${message.guildId}`;
   const current = levelsTable.findOne({ userId: message.author.id, guildId: message.guildId }) || {
     userId: message.author.id,
     guildId: message.guildId,
@@ -61,7 +61,7 @@ async function announceLevelUp(message, data, runtime) {
   if (!channel) return;
 
   const container = V2.container(V2.config.brand_color, [
-    V2.text(`## Level Up!`),
+    V2.text('## Level Up!'),
     V2.separator(),
     V2.text(`Congratulations <@${message.author.id}>! You reached **Level ${data.level}**!`)
   ]);
@@ -72,16 +72,8 @@ async function announceLevelUp(message, data, runtime) {
 module.exports = {
   api: {
     slashCommands: engageSlashCmds,
-    levelsTable
-  },
-
-  async init(config, runtime) {
-    const coreApi = runtime.getPluginAPI?.('spinning_core');
-    if (coreApi?.registerSlashCommand) {
-      for (const cmd of engageSlashCmds) {
-        coreApi.registerSlashCommand(cmd);
-      }
-    }
+    levelsTable,
+    warningsTable
   },
 
   hooks: {
@@ -95,18 +87,19 @@ module.exports = {
       } catch (e) {
         console.error(`[spinning_engage] Error /${interaction.commandName}:`, e.message);
         const errReply = V2.error(`Error: ${e.message}`);
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({ components: [errReply], flags: V2.FLAG, ephemeral: true }).catch(() => {});
-        } else {
-          await interaction.reply({ components: [errReply], flags: V2.FLAG, ephemeral: true }).catch(() => {});
-        }
+        try {
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ components: [errReply], flags: V2.FLAG });
+          } else {
+            await interaction.reply({ components: [errReply], flags: V2.FLAG });
+          }
+        } catch {}
       }
     },
 
     message_received: async (payload, runtime) => {
       const { message } = payload;
       if (!message.guild) return;
-
       handleXpGain(message, runtime);
       await checkFlood(message, runtime);
     }

@@ -4,5 +4,6 @@
   "prefix": "!",
   "intents": ["Guilds", "GuildMessages", "MessageContent", "GuildMembers"],
   "clientId": "",
-  "disabledCommands": []
+  "disabledCommands": [],
+  "perGuildSlash": false
 }

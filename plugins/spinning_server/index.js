@@ -1,16 +1,8 @@
 const { V2 } = require('../spinning_core/lib/ui');
-const { Database, Table } = require('../../lib/db');
 const { sendWelcome, sendGoodbye } = require('./lib/welcome');
 const { logMessageEdit, logMessageDelete } = require('./lib/logging');
-const { executeModAction, getWarnings } = require('./lib/moderation');
+const { executeModAction } = require('./lib/moderation');
 const { handleAutoRole } = require('./lib/autorole');
-
-const db = new Database();
-const warningsTable = new Table(db, 'warnings');
-
-function getConfig(runtime) {
-  return runtime.getPluginConfig('spinning_server');
-}
 
 const serverSlashCmds = [
   {
@@ -19,12 +11,11 @@ const serverSlashCmds = [
     options: [{ type: 'channel', name: 'channel', description: 'Channel for welcome messages', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const channel = interaction.options.getChannel('channel');
-      const config = getConfig(runtime);
+      const config = runtime.getPluginConfig('spinning_server');
       config.welcome_channel = channel.id;
-      runtime.getPluginConfig && runtime.setPluginConfig?.('spinning_server', config);
       await V2.reply(interaction, V2.success(`Welcome channel set to <#${channel.id}>`));
     }
   },
@@ -34,10 +25,10 @@ const serverSlashCmds = [
     options: [{ type: 'channel', name: 'channel', description: 'Channel for goodbye messages', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const channel = interaction.options.getChannel('channel');
-      const config = getConfig(runtime);
+      const config = runtime.getPluginConfig('spinning_server');
       config.goodbye_channel = channel.id;
       await V2.reply(interaction, V2.success(`Goodbye channel set to <#${channel.id}>`));
     }
@@ -48,7 +39,7 @@ const serverSlashCmds = [
     options: [],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       await sendWelcome(interaction.member, runtime, interaction.channel);
       await V2.reply(interaction, V2.success('Welcome test sent!'));
@@ -60,10 +51,10 @@ const serverSlashCmds = [
     options: [{ type: 'channel', name: 'channel', description: 'Channel for logs', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const channel = interaction.options.getChannel('channel');
-      const config = getConfig(runtime);
+      const config = runtime.getPluginConfig('spinning_server');
       config.log_channel = channel.id;
       await V2.reply(interaction, V2.success(`Log channel set to <#${channel.id}>`));
     }
@@ -74,10 +65,10 @@ const serverSlashCmds = [
     options: [{ type: 'boolean', name: 'enabled', description: 'Enable or disable', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const enabled = interaction.options.getBoolean('enabled');
-      const config = getConfig(runtime);
+      const config = runtime.getPluginConfig('spinning_server');
       config.logging_enabled = enabled;
       await V2.reply(interaction, V2.success(`Logging ${enabled ? 'enabled' : 'disabled'}.`));
     }
@@ -88,10 +79,10 @@ const serverSlashCmds = [
     options: [{ type: 'role', name: 'role', description: 'Role to auto-assign', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const role = interaction.options.getRole('role');
-      const config = getConfig(runtime);
+      const config = runtime.getPluginConfig('spinning_server');
       config.autorole_id = role.id;
       await V2.reply(interaction, V2.success(`Auto-role set to <@&${role.id}>`));
     }
@@ -102,9 +93,9 @@ const serverSlashCmds = [
     options: [],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
-      const config = getConfig(runtime);
+      const config = runtime.getPluginConfig('spinning_server');
       config.autorole_id = '';
       await V2.reply(interaction, V2.success('Auto-role removed.'));
     }
@@ -116,7 +107,7 @@ const serverSlashCmds = [
       { type: 'user', name: 'user', description: 'User to ban', required: true },
       { type: 'string', name: 'reason', description: 'Reason for ban', required: false }
     ],
-    async execute(interaction, runtime) {
+    async execute(interaction, runtime, warningsTable) {
       await executeModAction(interaction, runtime, 'ban', warningsTable);
     }
   },
@@ -127,7 +118,7 @@ const serverSlashCmds = [
       { type: 'user', name: 'user', description: 'User to kick', required: true },
       { type: 'string', name: 'reason', description: 'Reason for kick', required: false }
     ],
-    async execute(interaction, runtime) {
+    async execute(interaction, runtime, warningsTable) {
       await executeModAction(interaction, runtime, 'kick', warningsTable);
     }
   },
@@ -139,7 +130,7 @@ const serverSlashCmds = [
       { type: 'integer', name: 'minutes', description: 'Duration in minutes', required: true },
       { type: 'string', name: 'reason', description: 'Reason', required: false }
     ],
-    async execute(interaction, runtime) {
+    async execute(interaction, runtime, warningsTable) {
       await executeModAction(interaction, runtime, 'timeout', warningsTable);
     }
   },
@@ -150,7 +141,7 @@ const serverSlashCmds = [
       { type: 'user', name: 'user', description: 'User to warn', required: true },
       { type: 'string', name: 'reason', description: 'Reason', required: false }
     ],
-    async execute(interaction, runtime) {
+    async execute(interaction, runtime, warningsTable) {
       await executeModAction(interaction, runtime, 'warn', warningsTable);
     }
   },
@@ -158,11 +149,11 @@ const serverSlashCmds = [
     name: 'warnings',
     description: 'View warnings for a user',
     options: [{ type: 'user', name: 'user', description: 'User to check', required: true }],
-    async execute(interaction, runtime) {
+    async execute(interaction, runtime, warningsTable) {
       const user = interaction.options.getUser('user');
       const warns = warningsTable.find({ userId: user.id, guildId: interaction.guildId });
       if (warns.length === 0) {
-        return V2.reply(interaction, V2.info(`${user.tag} has no warnings.`), true);
+        return V2.reply(interaction, V2.info(`${user.tag} has no warnings.`));
       }
       const list = warns.map((w, i) => `**${i + 1}.** ${w.reason || 'No reason'} — <@${w.moderatorId}>`).join('\n');
       const container = V2.container(V2.config.brand_color, [
@@ -171,16 +162,16 @@ const serverSlashCmds = [
         V2.text(list),
         V2.text(`\n**Total:** ${warns.length}`)
       ]);
-      await V2.reply(interaction, container, true);
+      await V2.reply(interaction, container);
     }
   },
   {
     name: 'clearwarns',
     description: 'Clear all warnings for a user',
     options: [{ type: 'user', name: 'user', description: 'User to clear warnings for', required: true }],
-    async execute(interaction, runtime) {
+    async execute(interaction, runtime, warningsTable) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const user = interaction.options.getUser('user');
       const count = warningsTable.delete({ userId: user.id, guildId: interaction.guildId });
@@ -193,11 +184,11 @@ const serverSlashCmds = [
     options: [{ type: 'integer', name: 'amount', description: 'Number of messages to delete (1-100)', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const amount = interaction.options.getInteger('amount');
       if (amount < 1 || amount > 100) {
-        return V2.reply(interaction, V2.error('Amount must be between 1 and 100.'), true);
+        return V2.reply(interaction, V2.error('Amount must be between 1 and 100.'));
       }
       await interaction.deferReply();
       const deleted = await interaction.channel.bulkDelete(amount, true);
@@ -210,7 +201,7 @@ const serverSlashCmds = [
     options: [{ type: 'integer', name: 'seconds', description: 'Slowmode in seconds (0 to disable)', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       const seconds = interaction.options.getInteger('seconds');
       await interaction.channel.setRateLimitPerUser(seconds);
@@ -223,7 +214,7 @@ const serverSlashCmds = [
     options: [],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       await interaction.channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { SendMessages: false });
       await V2.reply(interaction, V2.success('Channel locked.'));
@@ -235,7 +226,7 @@ const serverSlashCmds = [
     options: [],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
       await interaction.channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { SendMessages: true });
       await V2.reply(interaction, V2.success('Channel unlocked.'));
@@ -248,15 +239,6 @@ module.exports = {
     slashCommands: serverSlashCmds
   },
 
-  async init(config, runtime) {
-    const coreApi = runtime.getPluginAPI?.('spinning_core');
-    if (coreApi?.registerSlashCommand) {
-      for (const cmd of serverSlashCmds) {
-        coreApi.registerSlashCommand(cmd);
-      }
-    }
-  },
-
   hooks: {
     interaction_received: async (payload, runtime) => {
       const { interaction } = payload;
@@ -264,15 +246,18 @@ module.exports = {
       const cmd = serverSlashCmds.find(c => c.name === interaction.commandName);
       if (!cmd) return;
       try {
-        await cmd.execute(interaction, runtime);
+        const engageApi = runtime.getPluginAPI?.('spinning_engage');
+        await cmd.execute(interaction, runtime, engageApi?.warningsTable);
       } catch (e) {
         console.error(`[spinning_server] Error /${interaction.commandName}:`, e.message);
         const errReply = V2.error(`Error: ${e.message}`);
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({ components: [errReply], flags: V2.FLAG, ephemeral: true }).catch(() => {});
-        } else {
-          await interaction.reply({ components: [errReply], flags: V2.FLAG, ephemeral: true }).catch(() => {});
-        }
+        try {
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ components: [errReply], flags: V2.FLAG });
+          } else {
+            await interaction.reply({ components: [errReply], flags: V2.FLAG });
+          }
+        } catch {}
       }
     },
 

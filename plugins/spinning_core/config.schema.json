@@ -12,6 +12,11 @@
       "type": "string",
       "default": "#B8A9C9",
       "description": "Brand accent color for V2 containers"
+    },
+    "perGuildSlash": {
+      "type": "boolean",
+      "default": false,
+      "description": "Register slash commands per-guild for instant availability (no 1-hour wait)"
     }
   }
 }

@@ -5,8 +5,9 @@ function getLevelData(levelsTable, userId, guildId) {
 }
 
 function getProgressBar(current, total, length = 10) {
+  if (total <= 0) return '░'.repeat(length);
   const filled = Math.round((current / total) * length);
-  return '█'.repeat(filled) + '░'.repeat(length - filled);
+  return '█'.repeat(Math.min(filled, length)) + '░'.repeat(Math.max(length - filled, 0));
 }
 
 const levelSlashCmds = [
@@ -70,7 +71,7 @@ const levelSlashCmds = [
     ],
     async execute(interaction, runtime, levelsTable) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
-        return V2.reply(interaction, V2.error('You need Administrator permission.'), true);
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
       }
 
       const user = interaction.options.getUser('user');
