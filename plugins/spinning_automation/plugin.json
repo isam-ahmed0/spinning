@@ -1,0 +1,11 @@
+{
+  "name": "spinning_automation",
+  "version": "1.0.0",
+  "description": "Reaction roles, J2C, autopost, autobump, autoreact, vanity roles",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

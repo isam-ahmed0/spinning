@@ -1,0 +1,11 @@
+{
+  "name": "spinning_giveaway",
+  "version": "1.0.0",
+  "description": "Giveaway system with enter, end, and reroll",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

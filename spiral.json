@@ -1,9 +1,12 @@
 {
-  "name": "Spinning",
+  "name": "Spinning Apple",
   "token": "",
   "prefix": "!",
-  "intents": ["Guilds", "GuildMessages", "MessageContent", "GuildMembers"],
+  "intents": ["Guilds", "GuildMessages", "MessageContent", "GuildMembers", "GuildVoiceStates", "GuildPresences", "GuildMessageReactions", "DirectMessages"],
   "clientId": "",
   "disabledCommands": [],
-  "perGuildSlash": false
+  "perGuildSlash": false,
+  "owner_id": "",
+  "groq_api_key": "",
+  "serpapi_key": ""
 }

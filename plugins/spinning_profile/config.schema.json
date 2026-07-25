@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spinning Apple Profile Config",
+  "type": "object",
+  "properties": {
+    "profile_enabled": { "type": "boolean", "default": true, "description": "Enable profile system" }
+  }
+}

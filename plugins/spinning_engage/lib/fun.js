@@ -1,4 +1,5 @@
 const { V2 } = require('../../spinning_core/lib/ui');
+const emojis = require('../../../emojis.json');
 
 const EIGHT_BALL_ANSWERS = [
   'It is certain.', 'It is decidedly so.', 'Without a doubt.',
@@ -56,7 +57,7 @@ const funSlashCmds = [
       const question = interaction.options.getString('question');
       const answer = EIGHT_BALL_ANSWERS[Math.floor(Math.random() * EIGHT_BALL_ANSWERS.length)];
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Magic 8-Ball'),
+        V2.text(`${emojis.question} **Magic 8-Ball**`),
         V2.separator(),
         V2.text(`**Q:** ${question}`),
         V2.text(`**A:** ${answer}`)
@@ -71,7 +72,7 @@ const funSlashCmds = [
     async execute(interaction) {
       const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Coin Flip'),
+        V2.text(`${emojis.coin || '🪙'} **Coin Flip**`),
         V2.separator(),
         V2.text(`**${result}!**`)
       ]);
@@ -96,7 +97,7 @@ const funSlashCmds = [
       const rolls = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1);
       const total = rolls.reduce((a, b) => a + b, 0);
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Dice Roll'),
+        V2.text(`${emojis.dice || '🎲'} **Dice Roll**`),
         V2.separator(),
         V2.text(`**${dice}:** ${rolls.join(', ')}`),
         V2.text(`**Total:** ${total}`)
@@ -117,13 +118,9 @@ const funSlashCmds = [
       if (!data) {
         return interaction.editReply({ components: [V2.error('Could not fetch a meme.')], flags: V2.FLAG });
       }
-      const { MediaGalleryBuilder, MediaGalleryItemBuilder } = require('discord.js');
-      const gallery = new MediaGalleryBuilder().addItems(
-        new MediaGalleryItemBuilder().setURL(data.url)
-      );
       const container = V2.container(V2.config.brand_color, [
-        V2.text(`## ${data.title}`),
-        gallery
+        V2.text(`${emojis.fun} **${data.title}**`),
+        V2.mediaGallery(data.url)
       ]);
       await interaction.editReply({ components: [container], flags: V2.FLAG });
     }
@@ -142,7 +139,7 @@ const funSlashCmds = [
         joke = JOKES[Math.floor(Math.random() * JOKES.length)];
       }
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Joke'),
+        V2.text(`${emojis.laugh || '🤣'} **Joke**`),
         V2.separator(),
         V2.text(joke.setup),
         V2.text(`||${joke.punchline}||`)
@@ -164,7 +161,7 @@ const funSlashCmds = [
         fact = FACTS[Math.floor(Math.random() * FACTS.length)];
       }
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Did You Know?'),
+        V2.text(`${emojis.info} **Did You Know?**`),
         V2.separator(),
         V2.text(fact)
       ]);

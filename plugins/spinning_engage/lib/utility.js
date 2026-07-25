@@ -1,4 +1,5 @@
 const { V2 } = require('../../spinning_core/lib/ui');
+const emojis = require('../../../emojis.json');
 
 const snipeCache = new Map();
 
@@ -13,7 +14,7 @@ const utilitySlashCmds = [
 
       const container = V2.container(V2.config.brand_color, [
         V2.section(
-          [V2.text(`## ${user.username}'s Avatar`)],
+          [V2.text(`${emojis.image || '🖼️'} **${user.username}'s Avatar**`)],
           V2.thumbnail(avatarURL)
         ),
         V2.separator(),
@@ -35,14 +36,14 @@ const utilitySlashCmds = [
       const created = `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`;
 
       const container = V2.container(V2.config.brand_color, [
-        V2.text(`## ${guild.name}`),
+        V2.text(`${emojis.server} **${guild.name}**`),
         V2.separator(),
-        V2.text(`**Owner:** ${owner ? `<@${owner.id}>` : 'Unknown'}`),
-        V2.text(`**Members:** ${guild.memberCount}`),
-        V2.text(`**Text Channels:** ${textChannels}`),
-        V2.text(`**Voice Channels:** ${voiceChannels}`),
-        V2.text(`**Roles:** ${roles}`),
-        V2.text(`**Created:** ${created}`)
+        V2.text(`${emojis.user} **Owner:** ${owner ? `<@${owner.id}>` : 'Unknown'}`),
+        V2.text(`${emojis.users} **Members:** ${guild.memberCount}`),
+        V2.text(`${emojis.channel} **Text Channels:** ${textChannels}`),
+        V2.text(`${emojis.voice} **Voice Channels:** ${voiceChannels}`),
+        V2.text(`${emojis.role} **Roles:** ${roles}`),
+        V2.text(`${emojis.calendar || '📅'} **Created:** ${created}`)
       ]);
       await V2.reply(interaction, container);
     }
@@ -60,7 +61,7 @@ const utilitySlashCmds = [
       const container = V2.container(V2.config.brand_color, [
         V2.section(
           [
-            V2.text(`## ${user.username}`),
+            V2.text(`${emojis.user} **${user.username}**`),
             V2.separator(),
             V2.text(`**ID:** ${user.id}`),
             V2.text(`**Created:** ${created}`),
@@ -84,7 +85,7 @@ const utilitySlashCmds = [
       }
 
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Sniped Message'),
+        V2.text(`${emojis.target} **Sniped Message**`),
         V2.separator(),
         V2.text(`**Author:** <@${cached.authorId}>`),
         V2.text(`**Channel:** <#${cached.channelId}>`),

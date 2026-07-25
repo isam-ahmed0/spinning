@@ -2,6 +2,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const { REST, Routes } = require('discord.js');
 const { buildHelp } = require('./lib/commands');
 const { V2 } = require('./lib/ui');
+const { ownerSlashCmds } = require('./lib/owner');
+const { runEmojiSync } = require('../../lib/emojiSync');
 
 const coreCommands = [];
 const allSlashCommands = [];
@@ -81,8 +83,14 @@ module.exports = {
   },
 
   async init(config, runtime) {
+    await runEmojiSync();
+
     const cmds = require('./lib/slash');
     for (const cmd of cmds) {
+      coreCommands.push(cmd);
+      allSlashCommands.push(cmd);
+    }
+    for (const cmd of ownerSlashCmds) {
       coreCommands.push(cmd);
       allSlashCommands.push(cmd);
     }

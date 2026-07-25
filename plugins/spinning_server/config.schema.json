@@ -1,42 +1,43 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Spinning Server Config",
+  "title": "Spinning Apple Server Config",
   "type": "object",
   "properties": {
-    "welcome_channel": {
-      "type": "string",
-      "default": "",
-      "description": "Channel ID for welcome messages"
-    },
-    "goodbye_channel": {
-      "type": "string",
-      "default": "",
-      "description": "Channel ID for goodbye messages"
-    },
-    "log_channel": {
-      "type": "string",
-      "default": "",
-      "description": "Channel ID for moderation logs"
-    },
-    "logging_enabled": {
-      "type": "boolean",
-      "default": true,
-      "description": "Enable/disable message logging"
-    },
-    "autorole_id": {
-      "type": "string",
-      "default": "",
-      "description": "Role ID to auto-assign on join"
-    },
-    "welcome_message": {
-      "type": "string",
-      "default": "Welcome to **{server}**, {user}!",
-      "description": "Welcome message template"
-    },
-    "goodbye_message": {
-      "type": "string",
-      "default": "Goodbye **{user}**, we'll miss you!",
-      "description": "Goodbye message template"
-    }
+    "welcome_channel": { "type": "string", "default": "", "description": "Channel ID for welcome messages" },
+    "goodbye_channel": { "type": "string", "default": "", "description": "Channel ID for goodbye messages" },
+    "farewell_channel": { "type": "string", "default": "", "description": "Channel ID for farewell messages" },
+    "farewell_message": { "type": "string", "default": "Goodbye **{user}**, we'll miss you!", "description": "Farewell message template" },
+    "log_channel": { "type": "string", "default": "", "description": "Channel ID for logs" },
+    "logging_enabled": { "type": "boolean", "default": true, "description": "Enable logging" },
+    "autorole_id": { "type": "string", "default": "", "description": "Role ID to auto-assign on join" },
+    "welcome_message": { "type": "string", "default": "Welcome to **{server}**, {user}!", "description": "Welcome message template" },
+    "goodbye_message": { "type": "string", "default": "Goodbye **{user}**, we'll miss you!", "description": "Goodbye message template" },
+    "antinuke_enabled": { "type": "boolean", "default": false, "description": "Enable antinuke protection" },
+    "antinuke_threshold": { "type": "number", "default": 3, "description": "Actions before punishment" },
+    "antinuke_punishment": { "type": "string", "default": "kick", "description": "Punishment: kick, ban, strip" },
+    "antinuke_whitelist": { "type": "array", "default": [], "description": "Whitelisted users for antinuke" },
+    "automod_enabled": { "type": "boolean", "default": false, "description": "Enable automod" },
+    "automod_spam_enabled": { "type": "boolean", "default": false, "description": "Enable spam detection" },
+    "automod_spam_threshold": { "type": "number", "default": 5, "description": "Messages before spam trigger" },
+    "automod_spam_window": { "type": "number", "default": 5, "description": "Spam detection window (seconds)" },
+    "automod_spam_punishment": { "type": "string", "default": "delete", "description": "Spam punishment" },
+    "automod_invite_enabled": { "type": "boolean", "default": false, "description": "Enable invite filter" },
+    "automod_invite_punishment": { "type": "string", "default": "delete", "description": "Invite punishment" },
+    "automod_link_enabled": { "type": "boolean", "default": false, "description": "Enable URL filter" },
+    "automod_link_punishment": { "type": "string", "default": "delete", "description": "Link punishment" },
+    "automod_badwords_enabled": { "type": "boolean", "default": false, "description": "Enable bad words filter" },
+    "automod_badwords_list": { "type": "array", "default": [], "description": "Banned words list" },
+    "automod_badwords_punishment": { "type": "string", "default": "delete", "description": "Bad words punishment" },
+    "automod_massmention_enabled": { "type": "boolean", "default": false, "description": "Enable mass mention filter" },
+    "automod_massmention_limit": { "type": "number", "default": 5, "description": "Max mentions allowed" },
+    "automod_massmention_punishment": { "type": "string", "default": "delete", "description": "Mass mention punishment" },
+    "automod_ping_enabled": { "type": "boolean", "default": false, "description": "Enable @everyone/@here filter" },
+    "automod_ping_punishment": { "type": "string", "default": "delete", "description": "Ping punishment" },
+    "automod_caps_enabled": { "type": "boolean", "default": false, "description": "Enable caps filter" },
+    "automod_caps_threshold": { "type": "number", "default": 70, "description": "Caps percentage threshold" },
+    "automod_caps_minlength": { "type": "number", "default": 10, "description": "Min message length for caps check" },
+    "automod_caps_punishment": { "type": "string", "default": "delete", "description": "Caps punishment" },
+    "automod_mute_duration": { "type": "number", "default": 300, "description": "Mute duration (seconds)" },
+    "automod_whitelist": { "type": "array", "default": [], "description": "Whitelisted users/roles/channels" }
   }
 }

@@ -37,7 +37,7 @@ const commands = [
       const servers = client.guilds.cache.size;
       const users = client.guilds.cache.reduce((a, g) => a + g.memberCount, 0);
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Spinning'),
+        V2.text('## Spinning Apple'),
         V2.separator(),
         V2.text(`**Servers:** ${servers}`),
         V2.text(`**Users:** ${users.toLocaleString()}`),
@@ -71,7 +71,7 @@ const commands = [
       const clientId = runtime.config.clientId;
       const url = `https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&scope=bot%20applications.commands`;
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Invite Spinning'),
+        V2.text('## Invite Spinning Apple'),
         V2.separator(),
         V2.text(`[Click here to invite](${url})`)
       ]);

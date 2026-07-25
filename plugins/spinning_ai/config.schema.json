@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spinning Apple AI Config",
+  "type": "object",
+  "properties": {
+    "ai_enabled": { "type": "boolean", "default": true, "description": "Enable AI commands" },
+    "ai_model": { "type": "string", "default": "llama-3.3-70b-versatile", "description": "Groq model to use" },
+    "ai_max_history": { "type": "number", "default": 20, "description": "Max conversation history per user" },
+    "ai_cooldown": { "type": "number", "default": 5, "description": "Seconds between AI requests per user" },
+    "ai_channels": { "type": "array", "default": [], "description": "Channel IDs where AI auto-replies" }
+  }
+}

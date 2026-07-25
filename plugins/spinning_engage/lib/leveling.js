@@ -1,4 +1,5 @@
 const { V2 } = require('../../spinning_core/lib/ui');
+const emojis = require('../../../emojis.json');
 
 function getLevelData(levelsTable, userId, guildId) {
   return levelsTable.findOne({ userId, guildId }) || { userId, guildId, xp: 0, level: 1 };
@@ -24,7 +25,7 @@ const levelSlashCmds = [
       const container = V2.container(V2.config.brand_color, [
         V2.section(
           [
-            V2.text(`## ${user.username}'s Rank`),
+            V2.text(`${emojis.trophy} **${user.username}'s Rank**`),
             V2.text(`**Level:** ${data.level} | **XP:** ${data.xp} / ${nextLevelXp}`),
             V2.text(`${progress} ${Math.round((data.xp / nextLevelXp) * 100)}%`)
           ],
@@ -48,12 +49,12 @@ const levelSlashCmds = [
       }
 
       const entries = top10.map((d, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `**${i + 1}.**`;
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${emojis.dots}`;
         return `${medal} <@${d.userId}> — Level ${d.level} (${d.xp} XP)`;
       }).join('\n');
 
       const container = V2.container(V2.config.brand_color, [
-        V2.text('## Leaderboard'),
+        V2.text(`${emojis.trophy} **Leaderboard**`),
         V2.separator(),
         V2.text(entries)
       ]);

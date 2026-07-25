@@ -14,7 +14,12 @@ function buildHelp(runtime) {
   const pluginLabels = {
     spinning_core: 'Core',
     spinning_server: 'Server',
-    spinning_engage: 'Engage'
+    spinning_engage: 'Engage',
+    spinning_ai: 'AI',
+    spinning_ticket: 'Tickets',
+    spinning_giveaway: 'Giveaway',
+    spinning_profile: 'Profile',
+    spinning_automation: 'Automation'
   };
 
   const components = [

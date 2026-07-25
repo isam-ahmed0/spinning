@@ -5,7 +5,12 @@ const {
   SeparatorSpacingSize,
   SectionBuilder,
   ThumbnailBuilder,
-  MessageFlags
+  MessageFlags,
+  ButtonBuilder,
+  ButtonStyle,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+  ActionRowBuilder
 } = require('discord.js');
 
 const BRAND_COLOR = '#B8A9C9';
@@ -40,6 +45,8 @@ const V2 = {
       if (comp instanceof TextDisplayBuilder) c.addTextDisplayComponents(comp);
       else if (comp instanceof SeparatorBuilder) c.addSeparatorComponents(comp);
       else if (comp instanceof SectionBuilder) c.addSectionComponents(comp);
+      else if (comp instanceof MediaGalleryBuilder) c.addMediaGalleryComponents(comp);
+      else if (comp instanceof ActionRowBuilder) c.addActionRowComponents(comp);
     }
     return c;
   },
@@ -62,6 +69,39 @@ const V2 = {
     const t = new ThumbnailBuilder({ media: { url } });
     t._type = 'thumbnail';
     return t;
+  },
+
+  button(style, label, customId, disabled = false) {
+    const styleMap = {
+      Primary: ButtonStyle.Primary,
+      Secondary: ButtonStyle.Secondary,
+      Success: ButtonStyle.Success,
+      Danger: ButtonStyle.Danger,
+      Link: ButtonStyle.Link
+    };
+    const b = new ButtonBuilder()
+      .setStyle(styleMap[style] || ButtonStyle.Secondary)
+      .setLabel(label)
+      .setCustomId(customId)
+      .setDisabled(disabled);
+    return b;
+  },
+
+  linkButton(label, url) {
+    return new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel(label)
+      .setURL(url);
+  },
+
+  buttonRow(...buttons) {
+    return new ActionRowBuilder().addComponents(buttons);
+  },
+
+  mediaGallery(url) {
+    return new MediaGalleryBuilder().addItems(
+      new MediaGalleryItemBuilder().setURL(url)
+    );
   },
 
   success(text) {

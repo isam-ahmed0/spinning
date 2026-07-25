@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spinning Apple Automation Config",
+  "type": "object",
+  "properties": {
+    "reactionroles_enabled": { "type": "boolean", "default": false, "description": "Enable reaction roles" },
+    "reactionroles_config": { "type": "array", "default": [], "description": "Reaction role configurations" },
+    "j2c_enabled": { "type": "boolean", "default": false, "description": "Enable Join-to-Create" },
+    "j2c_trigger_channel": { "type": "string", "default": "", "description": "Voice channel ID that triggers J2C" },
+    "j2c_category": { "type": "string", "default": "", "description": "Category ID for temp channels" },
+    "j2c_temp_channels": { "type": "array", "default": [], "description": "Active temp channel IDs" },
+    "autopost_enabled": { "type": "boolean", "default": false, "description": "Enable auto-post" },
+    "autopost_config": { "type": "array", "default": [], "description": "Auto-post configurations" },
+    "autobump_enabled": { "type": "boolean", "default": false, "description": "Enable auto-bump" },
+    "autobump_config": { "type": "object", "default": {}, "description": "Auto-bump configuration" },
+    "autoreact_enabled": { "type": "boolean", "default": false, "description": "Enable auto-react" },
+    "autoreact_config": { "type": "array", "default": [], "description": "Auto-react configurations" },
+    "vanityroles_enabled": { "type": "boolean", "default": false, "description": "Enable vanity roles" },
+    "vanityroles_config": { "type": "array", "default": [], "description": "Vanity role configurations" }
+  }
+}

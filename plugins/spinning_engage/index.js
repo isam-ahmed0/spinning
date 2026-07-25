@@ -2,8 +2,13 @@ const { V2 } = require('../spinning_core/lib/ui');
 const { Database, Table } = require('../../lib/db');
 const { funSlashCmds } = require('./lib/fun');
 const { levelSlashCmds } = require('./lib/leveling');
-const { utilitySlashCmds } = require('./lib/utility');
+const { utilitySlashCmds, cacheDelete } = require('./lib/utility');
 const { checkFlood } = require('./lib/antiraid');
+const { roleplaySlashCmds } = require('./lib/roleplay');
+const { afkSlashCmds, checkAfk } = require('./lib/afk');
+const { remindSlashCmds, checkReminders } = require('./lib/reminders');
+const { todoSlashCmds } = require('./lib/todo');
+const { calcSlashCmds } = require('./lib/calc');
 
 const db = new Database();
 const levelsTable = new Table(db, 'levels');
@@ -13,7 +18,12 @@ const xpCooldowns = new Map();
 const engageSlashCmds = [
   ...funSlashCmds,
   ...levelSlashCmds,
-  ...utilitySlashCmds
+  ...utilitySlashCmds,
+  ...roleplaySlashCmds,
+  ...afkSlashCmds,
+  ...remindSlashCmds,
+  ...todoSlashCmds,
+  ...calcSlashCmds
 ];
 
 function getConfig(runtime) {
@@ -69,6 +79,8 @@ async function announceLevelUp(message, data, runtime) {
   await channel.send({ components: [container], flags: V2.FLAG }).catch(() => {});
 }
 
+let reminderInterval = null;
+
 module.exports = {
   api: {
     slashCommands: engageSlashCmds,
@@ -86,9 +98,39 @@ module.exports = {
   },
 
   hooks: {
+    bot_ready: async (payload, runtime) => {
+      if (reminderInterval) clearInterval(reminderInterval);
+      reminderInterval = setInterval(() => {
+        checkReminders(payload.client);
+      }, 10000);
+    },
+
     interaction_received: async (payload, runtime) => {
       const { interaction } = payload;
       if (!interaction.isChatInputCommand()) return;
+
+      if (interaction.isButton()) {
+        const customId = interaction.customId;
+        if (customId.includes('_back_')) {
+          const parts = customId.split('_back_');
+          const action = parts[0];
+          const initiatorId = parts[1];
+          const targetId = parts[2];
+          if (interaction.user.id === targetId) {
+            const container = V2.container(V2.config.brand_color, [
+              V2.section(
+                [V2.text(`**${interaction.user.username}** does it back! 🔄`)],
+                V2.thumbnail(interaction.user.displayAvatarURL({ extension: 'png', size: 256 }))
+              )
+            ]);
+            await V2.reply(interaction, container);
+          } else {
+            await V2.reply(interaction, V2.error('This action is not for you.'), true);
+          }
+        }
+        return;
+      }
+
       const cmd = engageSlashCmds.find(c => c.name === interaction.commandName);
       if (!cmd) return;
       try {
@@ -109,8 +151,15 @@ module.exports = {
     message_received: async (payload, runtime) => {
       const { message } = payload;
       if (!message.guild) return;
+      checkAfk(message, runtime);
       handleXpGain(message, runtime);
       await checkFlood(message, runtime);
+    },
+
+    message_delete: async (payload, runtime) => {
+      const { message } = payload;
+      if (!message || !message.guild) return;
+      cacheDelete(message);
     }
   }
 };

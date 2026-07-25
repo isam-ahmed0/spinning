@@ -3,6 +3,15 @@ const { sendWelcome, sendGoodbye } = require('./lib/welcome');
 const { logMessageEdit, logMessageDelete } = require('./lib/logging');
 const { executeModAction } = require('./lib/moderation');
 const { handleAutoRole } = require('./lib/autorole');
+const { voiceSlashCmds } = require('./lib/voice');
+const { farewellSlashCmds } = require('./lib/farewell');
+const { checkAntinukeEvent } = require('./lib/antinuke');
+const { checkAutomod } = require('./lib/automod');
+const {
+  logMemberJoin, logMemberRemove, logBanAdd, logBanRemove,
+  logRoleCreate, logRoleDelete, logChannelCreate, logChannelDelete,
+  logVoiceState
+} = require('./lib/logging-extended');
 
 const serverSlashCmds = [
   {
@@ -61,7 +70,7 @@ const serverSlashCmds = [
   },
   {
     name: 'togglelog',
-    description: 'Enable or disable message logging',
+    description: 'Enable or disable logging',
     options: [{ type: 'boolean', name: 'enabled', description: 'Enable or disable', required: true }],
     async execute(interaction, runtime) {
       if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
@@ -231,7 +240,103 @@ const serverSlashCmds = [
       await interaction.channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { SendMessages: true });
       await V2.reply(interaction, V2.success('Channel unlocked.'));
     }
-  }
+  },
+  {
+    name: 'antinuke',
+    description: 'Configure antinuke protection',
+    options: [
+      { type: 'string', name: 'action', description: 'enable, disable, settings, or whitelist', required: true },
+      { type: 'string', name: 'subaction', description: 'For whitelist: add, remove, show', required: false },
+      { type: 'string', name: 'value', description: 'User ID or value', required: false }
+    ],
+    async execute(interaction, runtime) {
+      if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
+      }
+      const action = interaction.options.getString('action');
+      const sub = interaction.options.getString('subaction');
+      const value = interaction.options.getString('value');
+      const config = runtime.getPluginConfig('spinning_server');
+
+      if (action === 'enable') {
+        config.antinuke_enabled = true;
+        await V2.reply(interaction, V2.success('Antinuke enabled.'));
+      } else if (action === 'disable') {
+        config.antinuke_enabled = false;
+        await V2.reply(interaction, V2.success('Antinuke disabled.'));
+      } else if (action === 'settings') {
+        const container = V2.container(V2.config.brand_color, [
+          V2.text('## Antinuke Settings'),
+          V2.separator(),
+          V2.text(`**Enabled:** ${config.antinuke_enabled ? 'Yes' : 'No'}`),
+          V2.text(`**Threshold:** ${config.antinuke_threshold || 3} actions`),
+          V2.text(`**Punishment:** ${config.antinuke_punishment || 'kick'}`),
+          V2.text(`**Whitelist:** ${(config.antinuke_whitelist || []).length} entries`)
+        ]);
+        await V2.reply(interaction, container);
+      } else if (action === 'whitelist') {
+        if (!sub) return V2.reply(interaction, V2.error('Specify: add, remove, or show'), true);
+        if (!config.antinuke_whitelist) config.antinuke_whitelist = [];
+        if (sub === 'add' && value) {
+          config.antinuke_whitelist.push({ id: value, events: [] });
+          await V2.reply(interaction, V2.success(`Added <@${value}> to antinuke whitelist.`));
+        } else if (sub === 'remove' && value) {
+          config.antinuke_whitelist = config.antinuke_whitelist.filter(w => w.id !== value);
+          await V2.reply(interaction, V2.success(`Removed <@${value}> from antinuke whitelist.`));
+        } else if (sub === 'show') {
+          const list = config.antinuke_whitelist.map(w => `<@${w.id}>`).join('\n') || 'None';
+          await V2.reply(interaction, V2.container(V2.config.brand_color, [
+            V2.text('## Antinuke Whitelist'),
+            V2.separator(),
+            V2.text(list)
+          ]));
+        }
+      }
+    }
+  },
+  {
+    name: 'automod',
+    description: 'Configure automod rules',
+    options: [
+      { type: 'string', name: 'action', description: 'enable, disable, or settings', required: true },
+      { type: 'string', name: 'rule', description: 'Rule: spam, invite, link, badwords, massmention, ping, caps', required: false },
+      { type: 'boolean', name: 'enabled', description: 'Enable/disable the rule', required: false }
+    ],
+    async execute(interaction, runtime) {
+      if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
+        return V2.reply(interaction, V2.error('You need Administrator permission.'));
+      }
+      const action = interaction.options.getString('action');
+      const rule = interaction.options.getString('rule');
+      const enabled = interaction.options.getBoolean('enabled');
+      const config = runtime.getPluginConfig('spinning_server');
+
+      if (action === 'enable') {
+        config.automod_enabled = true;
+        await V2.reply(interaction, V2.success('Automod enabled.'));
+      } else if (action === 'disable') {
+        config.automod_enabled = false;
+        await V2.reply(interaction, V2.success('Automod disabled.'));
+      } else if (action === 'settings') {
+        const rules = ['spam', 'invite', 'link', 'badwords', 'massmention', 'ping', 'caps'];
+        const lines = rules.map(r => `**${r}:** ${config[`automod_${r}_enabled`] ? 'ON' : 'OFF'}`).join('\n');
+        const container = V2.container(V2.config.brand_color, [
+          V2.text('## Automod Settings'),
+          V2.separator(),
+          V2.text(`**Global:** ${config.automod_enabled ? 'Enabled' : 'Disabled'}`),
+          V2.separator(),
+          V2.text(lines)
+        ]);
+        await V2.reply(interaction, container);
+      } else if (action === 'toggle' && rule) {
+        const key = `automod_${rule}_enabled`;
+        config[key] = enabled !== null ? enabled : !config[key];
+        await V2.reply(interaction, V2.success(`${rule} ${config[key] ? 'enabled' : 'disabled'}.`));
+      }
+    }
+  },
+  ...voiceSlashCmds,
+  ...farewellSlashCmds
 ];
 
 module.exports = {
@@ -274,11 +379,13 @@ module.exports = {
       const { member } = payload;
       await handleAutoRole(member, runtime);
       await sendWelcome(member, runtime);
+      await logMemberJoin(member, runtime);
     },
 
     guild_member_remove: async (payload, runtime) => {
       const { member } = payload;
       await sendGoodbye(member, runtime);
+      await logMemberRemove(member, runtime);
     },
 
     message_update: async (payload, runtime) => {
@@ -293,6 +400,47 @@ module.exports = {
       const { message } = payload;
       if (!message || message.author?.bot) return;
       await logMessageDelete(message, runtime);
+    },
+
+    message_received: async (payload, runtime) => {
+      const { message } = payload;
+      if (!message.guild) return;
+      await checkAutomod(message, runtime);
+    },
+
+    voice_state_update: async (payload, runtime) => {
+      const { oldState, newState } = payload;
+      await logVoiceState(oldState, newState, runtime);
+    },
+
+    guild_ban_add: async (payload, runtime) => {
+      const { ban } = payload;
+      await logBanAdd(ban, runtime);
+    },
+
+    guild_ban_remove: async (payload, runtime) => {
+      const { ban } = payload;
+      await logBanRemove(ban, runtime);
+    },
+
+    role_create: async (payload, runtime) => {
+      const { role } = payload;
+      await logRoleCreate(role, runtime);
+    },
+
+    role_delete: async (payload, runtime) => {
+      const { role } = payload;
+      await logRoleDelete(role, runtime);
+    },
+
+    channel_create: async (payload, runtime) => {
+      const { channel } = payload;
+      if (channel.guild) await logChannelCreate(channel, runtime);
+    },
+
+    channel_delete: async (payload, runtime) => {
+      const { channel } = payload;
+      if (channel.guild) await logChannelDelete(channel, runtime);
     }
   }
 };

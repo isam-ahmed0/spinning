@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spinning Apple Ticket Config",
+  "type": "object",
+  "properties": {
+    "ticket_enabled": { "type": "boolean", "default": false, "description": "Enable ticket system" },
+    "ticket_log_channel": { "type": "string", "default": "", "description": "Channel for ticket logs" },
+    "ticket_categories": { "type": "array", "default": [], "description": "Ticket categories with names and emoji" },
+    "ticket_staff_roles": { "type": "array", "default": [], "description": "Staff role IDs" },
+    "ticket_category_id": { "type": "string", "default": "", "description": "Category ID for ticket channels" },
+    "ticket_max_open": { "type": "number", "default": 3, "description": "Max open tickets per user" }
+  }
+}

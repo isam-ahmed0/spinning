@@ -1,0 +1,11 @@
+{
+  "name": "spinning_profile",
+  "version": "1.0.0",
+  "description": "User profile cards with canvas",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}
