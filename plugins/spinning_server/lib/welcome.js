@@ -1,49 +1,99 @@
 const { V2 } = require('../../spinning_core/lib/ui');
+const { Database, Table } = require('../../../lib/db');
+
+const db = new Database();
+const welcomeTable = new Table(db, 'welcome');
+
+function replacePlaceholders(text, member) {
+  if (!text) return text;
+  const joinDate = member.joinedAt;
+  const createDate = member.user.createdAt;
+  const formatDate = (date) => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
+  return text
+    .replace(/\{mention\}/g, `<@${member.id}>`)
+    .replace(/\{avatar\}/g, member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+    .replace(/\{user\}/g, member.user.username)
+    .replace(/\{user_nick\}/g, member.displayName || member.user.username)
+    .replace(/\{joindate\}/g, formatDate(joinDate))
+    .replace(/\{user_createdate\}/g, formatDate(createDate))
+    .replace(/\{server\}/g, member.guild.name)
+    .replace(/\{count\}/g, member.guild.memberCount.toString())
+    .replace(/\{server_icon\}/g, member.guild.iconURL({ dynamic: true, size: 256 }) || '');
+}
+
+function getWelcomeConfig(guildId) {
+  return welcomeTable.findOne({ guildId }) || { guildId, type: 'simple', enabled: false };
+}
 
 async function sendWelcome(member, runtime, testChannel = null) {
-  const config = runtime.getPluginConfig('spinning_server');
-  const channelId = testChannel?.id || config.welcome_channel;
+  const config = getWelcomeConfig(member.guild.id);
+  if (!config.enabled) return;
+
+  const channelId = testChannel?.id || config.channelId;
   if (!channelId) return;
 
   const channel = testChannel || member.guild.channels.cache.get(channelId);
   if (!channel) return;
 
-  const msg = (config.welcome_message || 'Welcome to **{server}**, {user}!')
-    .replace('{server}', member.guild.name)
-    .replace('{user}', `<@${member.id}>`)
-    .replace('{count}', member.guild.memberCount);
+  if (config.type === 'simple') {
+    const msg = replacePlaceholders(config.message || 'Welcome to **{server}**, {mention}!', member);
+    await channel.send({ content: msg }).catch(() => {});
+  } else {
+    const container = V2.container(config.color || V2.config.brand_color, [
+      V2.text(`### ${replacePlaceholders(config.title || 'Welcome', member)}`),
+      V2.separator(),
+      V2.text(replacePlaceholders(config.description || `Welcome to ${member.guild.name}!`, member))
+    ]);
 
-  const avatarURL = member.user.displayAvatarURL({ extension: 'png', size: 256 });
+    if (config.thumbnailUrl) {
+      const thumbUrl = replacePlaceholders(config.thumbnailUrl, member);
+      container[0].components[1] = V2.section(
+        [V2.text(replacePlaceholders(config.description || `Welcome to ${member.guild.name}!`, member))],
+        V2.thumbnail(thumbUrl)
+      );
+    }
 
-  const container = V2.container(V2.config.brand_color, [
-    V2.section(
-      [V2.text(msg)],
-      V2.thumbnail(avatarURL)
-    ),
-    V2.separator(),
-    V2.text(`Member #${member.guild.memberCount}`)
-  ]);
+    if (config.imageUrl) {
+      container.push(V2.separator());
+      container.push(V2.media([replacePlaceholders(config.imageUrl, member)]));
+    }
 
-  await channel.send({ components: [container], flags: V2.FLAG });
+    await channel.send({ components: container, flags: V2.FLAG }).catch(() => {});
+  }
 }
 
 async function sendGoodbye(member, runtime) {
-  const config = runtime.getPluginConfig('spinning_server');
-  const channelId = config.goodbye_channel;
+  const config = getWelcomeConfig(member.guild.id);
+  if (!config.goodbyeEnabled) return;
+
+  const channelId = config.goodbyeChannelId;
   if (!channelId) return;
 
   const channel = member.guild.channels.cache.get(channelId);
   if (!channel) return;
 
-  const msg = (config.goodbye_message || `Goodbye **{user}**, we'll miss you!`)
-    .replace('{server}', member.guild.name)
-    .replace('{user}', member.user.tag);
+  if (config.goodbyeType === 'simple') {
+    const msg = replacePlaceholders(config.goodbyeMessage || `Goodbye **{user}**, we'll miss you!`, member);
+    await channel.send({ content: msg }).catch(() => {});
+  } else {
+    const container = V2.container(config.goodbyeColor || V2.config.brand_color, [
+      V2.text(`### ${replacePlaceholders(config.goodbyeTitle || 'Goodbye', member)}`),
+      V2.separator(),
+      V2.text(replacePlaceholders(config.goodbyeDescription || `Goodbye ${member.user.username}, we'll miss you!`, member))
+    ]);
 
-  const container = V2.container(V2.config.brand_color, [
-    V2.text(msg)
-  ]);
+    if (config.goodbyeImageUrl) {
+      container.push(V2.separator());
+      container.push(V2.media([replacePlaceholders(config.goodbyeImageUrl, member)]));
+    }
 
-  await channel.send({ components: [container], flags: V2.FLAG });
+    await channel.send({ components: container, flags: V2.FLAG }).catch(() => {});
+  }
 }
 
-module.exports = { sendWelcome, sendGoodbye };
+module.exports = { sendWelcome, sendGoodbye, getWelcomeConfig, welcomeTable, replacePlaceholders };

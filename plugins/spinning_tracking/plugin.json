@@ -1,0 +1,11 @@
+{
+  "name": "spinning_tracking",
+  "version": "1.0.0",
+  "description": "Invite and message tracking for server analytics",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

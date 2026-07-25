@@ -1,0 +1,11 @@
+{
+  "name": "spinning_ignore",
+  "version": "1.0.0",
+  "description": "Ignore system for commands, channels, users, and bypass",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

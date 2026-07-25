@@ -1,14 +1,29 @@
 const { V2 } = require('../../spinning_core/lib/ui');
+const { Database, Table } = require('../../../lib/db');
 
-async function getLogChannel(runtime, guild) {
-  const config = runtime.getPluginConfig('spinning_server');
-  if (!config.logging_enabled) return null;
-  if (!config.log_channel) return null;
-  return guild.channels.cache.get(config.log_channel) || null;
+const db = new Database();
+const loggingTable = new Table(db, 'logging');
+
+function getLogConfig(guildId) {
+  return loggingTable.findOne({ guildId }) || {
+    guildId,
+    enabled: false,
+    channels: {}
+  };
+}
+
+function getLogChannel(runtime, guild, type = 'default') {
+  const config = getLogConfig(guild.id);
+  if (!config.enabled) return null;
+
+  const channelId = config.channels?.[type] || config.channels?.default || config.defaultChannel;
+  if (!channelId) return null;
+
+  return guild.channels.cache.get(channelId) || null;
 }
 
 async function logMemberJoin(member, runtime) {
-  const channel = await getLogChannel(runtime, member.guild);
+  const channel = getLogChannel(runtime, member.guild, 'member');
   if (!channel) return;
 
   const created = `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`;
@@ -26,7 +41,7 @@ async function logMemberJoin(member, runtime) {
 }
 
 async function logMemberRemove(member, runtime) {
-  const channel = await getLogChannel(runtime, member.guild);
+  const channel = getLogChannel(runtime, member.guild, 'member');
   if (!channel) return;
 
   const roles = member.roles.cache.filter(r => r.id !== member.guild.id).map(r => `<@&${r.id}>`);
@@ -44,7 +59,7 @@ async function logMemberRemove(member, runtime) {
 }
 
 async function logBanAdd(ban, runtime) {
-  const channel = await getLogChannel(runtime, ban.guild);
+  const channel = getLogChannel(runtime, ban.guild, 'mod');
   if (!channel) return;
 
   const container = V2.container('#ED4245', [
@@ -58,7 +73,7 @@ async function logBanAdd(ban, runtime) {
 }
 
 async function logBanRemove(ban, runtime) {
-  const channel = await getLogChannel(runtime, ban.guild);
+  const channel = getLogChannel(runtime, ban.guild, 'mod');
   if (!channel) return;
 
   const container = V2.container('#57F287', [
@@ -71,7 +86,7 @@ async function logBanRemove(ban, runtime) {
 }
 
 async function logRoleCreate(role, runtime) {
-  const channel = await getLogChannel(runtime, role.guild);
+  const channel = getLogChannel(runtime, role.guild, 'server');
   if (!channel) return;
 
   const container = V2.container(V2.config.brand_color, [
@@ -86,7 +101,7 @@ async function logRoleCreate(role, runtime) {
 }
 
 async function logRoleDelete(role, runtime) {
-  const channel = await getLogChannel(runtime, role.guild);
+  const channel = getLogChannel(runtime, role.guild, 'server');
   if (!channel) return;
 
   const container = V2.container('#ED4245', [
@@ -100,7 +115,7 @@ async function logRoleDelete(role, runtime) {
 }
 
 async function logChannelCreate(channel, runtime) {
-  const logCh = await getLogChannel(runtime, channel.guild);
+  const logCh = getLogChannel(runtime, channel.guild, 'server');
   if (!logCh) return;
 
   const type = { 0: 'Text', 2: 'Voice', 4: 'Category' }[channel.type] || 'Other';
@@ -115,7 +130,7 @@ async function logChannelCreate(channel, runtime) {
 }
 
 async function logChannelDelete(channel, runtime) {
-  const logCh = await getLogChannel(runtime, channel.guild);
+  const logCh = getLogChannel(runtime, channel.guild, 'server');
   if (!logCh) return;
 
   const type = { 0: 'Text', 2: 'Voice', 4: 'Category' }[channel.type] || 'Other';
@@ -131,7 +146,7 @@ async function logChannelDelete(channel, runtime) {
 
 async function logVoiceState(oldState, newState, runtime) {
   const guild = oldState.guild;
-  const logCh = await getLogChannel(runtime, guild);
+  const logCh = getLogChannel(runtime, guild, 'voice');
   if (!logCh) return;
 
   const member = newState.member;
@@ -170,6 +185,44 @@ async function logVoiceState(oldState, newState, runtime) {
   await logCh.send({ components: [container], flags: V2.FLAG }).catch(() => {});
 }
 
+async function logMessageEdit(oldMessage, newMessage, runtime) {
+  const channel = getLogChannel(runtime, newMessage.guild, 'message');
+  if (!channel) return;
+
+  const oldContent = oldMessage.content || '*empty*';
+  const newContent = newMessage.content || '*empty*';
+
+  const container = V2.container(V2.config.brand_color, [
+    V2.text('## Message Edited'),
+    V2.separator(),
+    V2.text(`**Author:** <@${oldMessage.author.id}>`),
+    V2.text(`**Channel:** <#${oldMessage.channel.id}>`),
+    V2.separator(),
+    V2.text(`**Before:**\n${oldContent.slice(0, 500)}`),
+    V2.text(`**After:**\n${newContent.slice(0, 500)}`)
+  ]);
+
+  await channel.send({ components: [container], flags: V2.FLAG }).catch(() => {});
+}
+
+async function logMessageDelete(message, runtime) {
+  const channel = getLogChannel(runtime, message.guild, 'message');
+  if (!channel) return;
+
+  const content = message.content || '*empty*';
+
+  const container = V2.container('#ED4245', [
+    V2.text('## Message Deleted'),
+    V2.separator(),
+    V2.text(`**Author:** <@${message.author.id}>`),
+    V2.text(`**Channel:** <#${message.channel.id}>`),
+    V2.separator(),
+    V2.text(`**Content:**\n${content.slice(0, 500)}`)
+  ]);
+
+  await channel.send({ components: [container], flags: V2.FLAG }).catch(() => {});
+}
+
 module.exports = {
   logMemberJoin,
   logMemberRemove,
@@ -179,5 +232,9 @@ module.exports = {
   logRoleDelete,
   logChannelCreate,
   logChannelDelete,
-  logVoiceState
+  logVoiceState,
+  logMessageEdit,
+  logMessageDelete,
+  getLogConfig,
+  loggingTable
 };

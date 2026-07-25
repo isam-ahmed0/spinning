@@ -1,5 +1,5 @@
 const { V2 } = require('../spinning_core/lib/ui');
-const { aiSlashCmds } = require('./lib/groq');
+const { aiSlashCmds, groqRequest, getApiKey, getHistory, addToHistory, SYSTEM_PROMPT } = require('./lib/groq');
 
 module.exports = {
   api: {
@@ -45,16 +45,16 @@ module.exports = {
       if (!config.ai_enabled) return;
       if (!config.ai_channels || !config.ai_channels.includes(message.channelId)) return;
 
-      const apiKey = runtime.config.groq_api_key;
-      if (!apiKey) return;
+      if (config.ai_mention_only && !message.mentions.has(message.client.user)) return;
 
-      const { groqRequest } = require('./lib/groq');
+      const apiKey = getApiKey(runtime);
+      if (!apiKey) return;
 
       try {
         addToHistory(message.author.id, 'user', message.content);
 
         const messages = [
-          { role: 'system', content: require('./lib/groq').SYSTEM_PROMPT || 'You are a helpful assistant.' },
+          { role: 'system', content: SYSTEM_PROMPT },
           ...getHistory(message.author.id)
         ];
 

@@ -1,0 +1,11 @@
+{
+  "name": "spinning_blacklist",
+  "version": "1.0.0",
+  "description": "User and guild blacklist system",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

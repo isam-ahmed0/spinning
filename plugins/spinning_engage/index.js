@@ -1,11 +1,11 @@
 const { V2 } = require('../spinning_core/lib/ui');
 const { Database, Table } = require('../../lib/db');
-const { funSlashCmds } = require('./lib/fun');
+
 const { levelSlashCmds } = require('./lib/leveling');
 const { utilitySlashCmds, cacheDelete } = require('./lib/utility');
 const { checkFlood } = require('./lib/antiraid');
-const { roleplaySlashCmds } = require('./lib/roleplay');
-const { afkSlashCmds, checkAfk } = require('./lib/afk');
+const { roleplaySlashCmds, roleplayActions } = require('./lib/roleplay');
+const { afkSlashCmds, handleAfkMessage, handleAfkButton } = require('./lib/afk');
 const { remindSlashCmds, checkReminders } = require('./lib/reminders');
 const { todoSlashCmds } = require('./lib/todo');
 const { calcSlashCmds } = require('./lib/calc');
@@ -16,7 +16,6 @@ const warningsTable = new Table(db, 'warnings');
 const xpCooldowns = new Map();
 
 const engageSlashCmds = [
-  ...funSlashCmds,
   ...levelSlashCmds,
   ...utilitySlashCmds,
   ...roleplaySlashCmds,
@@ -110,22 +109,46 @@ module.exports = {
       if (!interaction.isChatInputCommand()) return;
 
       if (interaction.isButton()) {
+        if (handleAfkButton(interaction)) return;
+
         const customId = interaction.customId;
-        if (customId.includes('_back_')) {
+        if (customId.includes('_back_') && !customId.startsWith('j2c_')) {
           const parts = customId.split('_back_');
-          const action = parts[0];
-          const initiatorId = parts[1];
-          const targetId = parts[2];
-          if (interaction.user.id === targetId) {
-            const container = V2.container(V2.config.brand_color, [
-              V2.section(
-                [V2.text(`**${interaction.user.username}** does it back! 🔄`)],
-                V2.thumbnail(interaction.user.displayAvatarURL({ extension: 'png', size: 256 }))
-              )
-            ]);
-            await V2.reply(interaction, container);
-          } else {
-            await V2.reply(interaction, V2.error('This action is not for you.'), true);
+          if (parts.length === 2) {
+            const action = parts[0];
+            const ids = parts[1].split('_');
+            if (ids.length === 2 && roleplayActions[action]) {
+              const [initiatorId, targetId] = ids;
+
+              if (interaction.user.id !== targetId) {
+                return V2.reply(interaction, { content: 'This button is not for you!', flags: 64 });
+              }
+
+              try {
+                const { buildRoleplayResponse } = require('./lib/roleplay');
+                const { MessageFlags } = require('discord.js');
+                await interaction.deferReply({ flags: MessageFlags.IsPersistent | MessageFlags.IsComponentsV2 });
+                const initiator = await interaction.client.users.fetch(initiatorId);
+                const responder = interaction.user;
+                const container = await buildRoleplayResponse(action, responder, initiator, false);
+
+                if (container) {
+                  await interaction.editReply({ components: [container], flags: MessageFlags.IsPersistent | MessageFlags.IsComponentsV2 });
+                } else {
+                  await interaction.editReply({ content: 'Failed to fetch GIF. Please try again later!' });
+                }
+              } catch (error) {
+                console.error(`[spinning_engage] Error handling roleplay button ${action}:`, error);
+                try {
+                  if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply({ content: 'There was an error processing this action!', flags: 64 });
+                  } else if (interaction.deferred && !interaction.replied) {
+                    await interaction.editReply({ content: 'There was an error processing this action!' });
+                  }
+                } catch {}
+              }
+              return;
+            }
           }
         }
         return;
@@ -151,7 +174,7 @@ module.exports = {
     message_received: async (payload, runtime) => {
       const { message } = payload;
       if (!message.guild) return;
-      checkAfk(message, runtime);
+      handleAfkMessage(message);
       handleXpGain(message, runtime);
       await checkFlood(message, runtime);
     },

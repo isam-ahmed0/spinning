@@ -22,6 +22,38 @@ DISCORD-SPECIFIC RULES:
 
 const conversations = new Map();
 const cooldowns = new Map();
+let keyIndex = 0;
+
+function getConfig(runtime) {
+  return runtime.getPluginConfig('spinning_ai');
+}
+
+function getApiKey(runtime) {
+  const keys = [];
+  const single = runtime.config?.groq_api_key;
+  if (single) keys.push(single);
+  if (runtime.config?.groq_api_keys) keys.push(...runtime.config.groq_api_keys);
+  for (let i = 1; i <= 10; i++) {
+    const k = process.env[`GROQ_API_KEY_${i}`] || runtime.config?.[`groq_api_key_${i}`];
+    if (k) keys.push(k);
+  }
+  if (keys.length === 0) return null;
+  const key = keys[keyIndex % keys.length];
+  keyIndex = (keyIndex + 1) % keys.length;
+  return key;
+}
+
+function getHistory(userId) {
+  return conversations.get(userId) || [];
+}
+
+function addToHistory(userId, role, content) {
+  const history = getHistory(userId);
+  history.push({ role, content });
+  const maxHistory = 20;
+  if (history.length > maxHistory) history.splice(0, history.length - maxHistory);
+  conversations.set(userId, history);
+}
 
 async function groqRequest(messages, model, apiKey) {
   const axios = require('axios');
@@ -40,22 +72,6 @@ async function groqRequest(messages, model, apiKey) {
   return res.data.choices[0].message.content;
 }
 
-function getConfig(runtime) {
-  return runtime.getPluginConfig('spinning_ai');
-}
-
-function getHistory(userId) {
-  return conversations.get(userId) || [];
-}
-
-function addToHistory(userId, role, content) {
-  const history = getHistory(userId);
-  history.push({ role, content });
-  const maxHistory = 20;
-  if (history.length > maxHistory) history.splice(0, history.length - maxHistory);
-  conversations.set(userId, history);
-}
-
 const aiSlashCmds = [
   {
     name: 'ai',
@@ -68,7 +84,6 @@ const aiSlashCmds = [
       const action = interaction.options.getString('action');
       const question = interaction.options.getString('question');
       const config = getConfig(runtime);
-      const emojis = require('../../../emojis.json');
 
       if (action === 'enable') {
         if (!V2.hasAdminOrOwner(interaction.member, runtime)) {
@@ -100,7 +115,7 @@ const aiSlashCmds = [
         if (!question) return V2.reply(interaction, V2.error('Provide a question.'), true);
         if (!config.ai_enabled) return V2.reply(interaction, V2.error('AI is disabled.'), true);
 
-        const apiKey = runtime.config.groq_api_key;
+        const apiKey = getApiKey(runtime);
         if (!apiKey) return V2.reply(interaction, V2.error('AI not configured. Set groq_api_key in spiral.json.'), true);
 
         const now = Date.now();
@@ -141,4 +156,4 @@ const aiSlashCmds = [
   }
 ];
 
-module.exports = { aiSlashCmds };
+module.exports = { aiSlashCmds, groqRequest, getApiKey, getHistory, addToHistory, SYSTEM_PROMPT };
