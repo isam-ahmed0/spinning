@@ -17,4 +17,4 @@ CLIENT_ID="$DISCORD_CLIENT_ID"
 jq --arg token "$TOKEN" --arg clientId "$CLIENT_ID" '.token = $token | .clientId = $clientId' spiral.json > spiral.tmp && mv spiral.tmp spiral.json
 
 echo "Starting Spinning..."
-spiral run
+spiral run -R
