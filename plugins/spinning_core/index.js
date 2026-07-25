@@ -103,6 +103,9 @@ module.exports = {
       try {
         await client.user.setActivity('Minimal bot for maximal vibes', { type: 0 });
       } catch {}
+      try {
+        client.user.setPresence({ status: 'online' });
+      } catch {}
       console.log(`[spinning_core] Ready as ${client.user.tag} | ${client.guilds.cache.size} servers`);
     },
 

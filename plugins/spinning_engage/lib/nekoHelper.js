@@ -18,19 +18,17 @@ const nekoEndpoints = {
   facepalm: 'facepalm',
   thumbsup: 'thumbsup',
   run: 'run',
-  eat: 'feed',
+  eat: 'nom',
   deathstare: 'stare'
 };
 
 async function getNekoGif(action) {
   try {
-    const endpoint = nekoEndpoints[action];
-    if (!endpoint) return null;
-    const response = await axios.get(`https://nekos.best/api/v2/${endpoint}`, {
-      headers: { 'User-Agent': 'SpinningApple/1.0' }
-    });
-    if (response.data.results && response.data.results.length > 0) {
-      return response.data.results[0].url;
+    const reaction = nekoEndpoints[action];
+    if (!reaction) return null;
+    const response = await axios.get(`https://api.otakugifs.xyz/gif?reaction=${reaction}`);
+    if (response.data && response.data.url) {
+      return response.data.url;
     }
   } catch (error) {
     console.error(`[nekoHelper] Error fetching GIF for ${action}:`, error.message);
