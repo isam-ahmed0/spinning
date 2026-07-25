@@ -35,7 +35,7 @@ async function sendGoodbye(member, runtime) {
   const channel = member.guild.channels.cache.get(channelId);
   if (!channel) return;
 
-  const msg = (config.goodbye_message || 'Goodbye **{user}**, we\\'ll miss you!')
+  const msg = (config.goodbye_message || `Goodbye **{user}**, we'll miss you!`)
     .replace('{server}', member.guild.name)
     .replace('{user}', member.user.tag);
 

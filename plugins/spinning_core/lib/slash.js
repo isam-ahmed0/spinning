@@ -1,4 +1,5 @@
 const { V2 } = require('./ui');
+const { buildHelp } = require('./commands');
 
 const commands = [
   {

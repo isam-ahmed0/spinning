@@ -34,17 +34,33 @@ async function registerSlashCommands(client, runtime) {
 
   const rest = new REST({ version: '10' }).setToken(runtime.config.token);
   const body = allSlashCommands.map(buildCommandBody);
+  const newNames = new Set(body.map(c => c.name));
 
   try {
     if (runtime.config.perGuildSlash) {
       const guilds = [...client.guilds.cache.values()];
       console.log(`[spinning_core] Registering ${body.length} commands in ${guilds.length} guild(s)...`);
+
       for (const guild of guilds) {
+        const existing = await rest.get(Routes.applicationGuildCommands(clientId, guild.id)).catch(() => []);
+        for (const cmd of existing) {
+          if (!newNames.has(cmd.name)) {
+            await rest.delete(Routes.applicationGuildCommands(clientId, guild.id, cmd.id));
+            console.log(`[spinning_core] Deleted stale command: /${cmd.name} in ${guild.name}`);
+          }
+        }
         await rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body });
         console.log(`[spinning_core] Registered in ${guild.name}`);
       }
     } else {
       console.log(`[spinning_core] Registering ${body.length} commands globally...`);
+      const existing = await rest.get(Routes.applicationCommands(clientId)).catch(() => []);
+      for (const cmd of existing) {
+        if (!newNames.has(cmd.name)) {
+          await rest.delete(Routes.applicationCommands(clientId, cmd.id));
+          console.log(`[spinning_core] Deleted stale command: /${cmd.name}`);
+        }
+      }
       await rest.put(Routes.applicationCommands(clientId), { body });
     }
     console.log(`[spinning_core] Slash commands registered.`);
@@ -89,8 +105,16 @@ module.exports = {
 
       const rest = new REST({ version: '10' }).setToken(runtime.config.token);
       const body = allSlashCommands.map(buildCommandBody);
+      const newNames = new Set(body.map(c => c.name));
 
       try {
+        const existing = await rest.get(Routes.applicationGuildCommands(clientId, guild.id)).catch(() => []);
+        for (const cmd of existing) {
+          if (!newNames.has(cmd.name)) {
+            await rest.delete(Routes.applicationGuildCommands(clientId, guild.id, cmd.id));
+            console.log(`[spinning_core] Deleted stale command: /${cmd.name} in ${guild.name}`);
+          }
+        }
         await rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body });
         console.log(`[spinning_core] Registered slash commands in ${guild.name}`);
       } catch (e) {

@@ -49,7 +49,7 @@ const V2 = {
     const texts = Array.isArray(textParts) ? textParts : [textParts];
     for (const t of texts) {
       if (typeof t === 'string') s.addTextDisplayComponents(new TextDisplayBuilder().setContent(t));
-      else s.addTextDisplayComponents(t);
+      else if (t instanceof TextDisplayBuilder) s.addTextDisplayComponents(t);
     }
     if (accessory) {
       if (accessory._type === 'thumbnail') s.setThumbnailAccessory(accessory);
@@ -78,8 +78,8 @@ const V2 = {
 
   async reply(interaction, component, ephemeral = false) {
     const components = Array.isArray(component) ? component : [component];
-    const opts = { components, flags: V2.FLAG };
-    if (ephemeral) opts.ephemeral = true;
+    const flags = ephemeral ? V2.FLAG | 64 : V2.FLAG;
+    const opts = { components, flags };
     if (interaction.replied || interaction.deferred) {
       return interaction.followUp(opts);
     }

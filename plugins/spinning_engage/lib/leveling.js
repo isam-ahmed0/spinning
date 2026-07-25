@@ -25,9 +25,7 @@ const levelSlashCmds = [
         V2.section(
           [
             V2.text(`## ${user.username}'s Rank`),
-            V2.separator(),
-            V2.text(`**Level:** ${data.level}`),
-            V2.text(`**XP:** ${data.xp} / ${nextLevelXp}`),
+            V2.text(`**Level:** ${data.level} | **XP:** ${data.xp} / ${nextLevelXp}`),
             V2.text(`${progress} ${Math.round((data.xp / nextLevelXp) * 100)}%`)
           ],
           V2.thumbnail(user.displayAvatarURL({ extension: 'png', size: 256 }))

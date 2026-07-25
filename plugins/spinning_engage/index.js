@@ -76,6 +76,15 @@ module.exports = {
     warningsTable
   },
 
+  async init(config, runtime) {
+    const coreApi = runtime.getPluginAPI?.('spinning_core');
+    if (coreApi?.registerSlashCommand) {
+      for (const cmd of engageSlashCmds) {
+        coreApi.registerSlashCommand(cmd);
+      }
+    }
+  },
+
   hooks: {
     interaction_received: async (payload, runtime) => {
       const { interaction } = payload;
