@@ -86,15 +86,17 @@ const V2 = {
     return interaction.reply(opts);
   },
 
-  isOwner(userId, runtime) {
+  isOwner(member, runtime) {
     const ownerId = runtime.getPluginConfig ? runtime.getPluginConfig('spinning_core')?.owner_id : null;
-    if (ownerId && userId === ownerId) return true;
+    if (!ownerId) return false;
+    if (member.id === ownerId) return true;
+    if (member.roles?.cache?.has(ownerId)) return true;
     return false;
   },
 
   hasAdminOrOwner(member, runtime) {
     if (member.permissions.has('Administrator')) return true;
-    return V2.isOwner(member.id, runtime);
+    return V2.isOwner(member, runtime);
   }
 };
 
