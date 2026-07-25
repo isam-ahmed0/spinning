@@ -1,0 +1,11 @@
+{
+  "name": "spinning_server",
+  "version": "1.0.0",
+  "description": "Server management: welcome, logging, moderation, autorole",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

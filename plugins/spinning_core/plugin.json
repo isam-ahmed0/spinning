@@ -1,0 +1,9 @@
+{
+  "name": "spinning_core",
+  "version": "1.0.0",
+  "description": "Core slash commands, help system, and shared UI helpers",
+  "author": "spinning",
+  "dependencies": {},
+  "collision_policy": "error",
+  "builtin": false
+}

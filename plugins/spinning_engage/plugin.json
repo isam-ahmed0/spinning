@@ -1,0 +1,11 @@
+{
+  "name": "spinning_engage",
+  "version": "1.0.0",
+  "description": "Fun commands, leveling system, utility, and anti-raid",
+  "author": "spinning",
+  "dependencies": {
+    "spinning_core": ">=1.0.0"
+  },
+  "collision_policy": "error",
+  "builtin": false
+}

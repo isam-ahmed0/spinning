@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spinning Core Config",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "default": "",
+      "description": "Discord user ID of the bot owner (for owner-only commands)"
+    },
+    "brand_color": {
+      "type": "string",
+      "default": "#B8A9C9",
+      "description": "Brand accent color for V2 containers"
+    }
+  }
+}

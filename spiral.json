@@ -1,0 +1,8 @@
+{
+  "name": "Spinning",
+  "token": "",
+  "prefix": "!",
+  "intents": ["Guilds", "GuildMessages", "MessageContent", "GuildMembers"],
+  "clientId": "",
+  "disabledCommands": []
+}

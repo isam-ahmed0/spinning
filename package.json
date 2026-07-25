@@ -1,0 +1,14 @@
+{
+  "name": "spinning",
+  "version": "1.0.0",
+  "description": "Minimalist Discord bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "spiral run",
+    "test": "spiral test"
+  },
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "spiralcord": "^2.3.1"
+  }
+}
