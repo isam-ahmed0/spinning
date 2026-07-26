@@ -8,12 +8,13 @@
     "test": "spiral test"
   },
   "dependencies": {
-    "discord.js": "^14.27.0",
-    "spiralcord": "^2.3.1",
-    "axios": "^1.7.0",
     "@napi-rs/canvas": "^0.1.80",
-    "wikipedia": "^2.4.2",
+    "axios": "^1.7.0",
+    "chokidar": "latest",
+    "discord.js": "^14.27.0",
     "ms": "^2.1.3",
-    "uuid": "^11.0.0"
+    "spiralcord": "^10.0.0",
+    "uuid": "^11.0.0",
+    "wikipedia": "^2.4.2"
   }
 }
