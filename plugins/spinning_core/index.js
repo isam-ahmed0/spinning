@@ -3,8 +3,29 @@ const { V2 } = require('./lib/ui');
 const { ownerSlashCmds } = require('./lib/owner');
 const { runEmojiSync } = require('../../lib/emojiSync');
 
+const { SlashCommandBuilder } = require('discord.js');
+
 const coreCommands = [];
 const allSlashCommands = [];
+
+function buildCommandBody(cmd) {
+  const builder = new SlashCommandBuilder()
+    .setName(cmd.name)
+    .setDescription(cmd.description);
+
+  if (cmd.options) {
+    for (const opt of cmd.options) {
+      if (opt.type === 'user') builder.addUserOption(o => o.setName(opt.name).setDescription(opt.description).setRequired(opt.required || false));
+      else if (opt.type === 'channel') builder.addChannelOption(o => o.setName(opt.name).setDescription(opt.description).setRequired(opt.required || false));
+      else if (opt.type === 'role') builder.addRoleOption(o => o.setName(opt.name).setDescription(opt.description).setRequired(opt.required || false));
+      else if (opt.type === 'string') builder.addStringOption(o => o.setName(opt.name).setDescription(opt.description).setRequired(opt.required || false));
+      else if (opt.type === 'integer') builder.addIntegerOption(o => o.setName(opt.name).setDescription(opt.description).setRequired(opt.required || false));
+      else if (opt.type === 'boolean') builder.addBooleanOption(o => o.setName(opt.name).setDescription(opt.description).setRequired(opt.required || false));
+    }
+  }
+
+  return builder.toJSON();
+}
 
 module.exports = {
   api: {
@@ -37,7 +58,7 @@ module.exports = {
       const clientId = runtime.config.clientId;
       if (clientId) {
         try {
-          await runtime.registerSlashCommands(clientId, allSlashCommands);
+          await runtime.registerSlashCommands(clientId, allSlashCommands.map(buildCommandBody));
         } catch (e) {
           console.error('[spinning_core] Slash registration error:', e.message);
         }
@@ -56,7 +77,7 @@ module.exports = {
       const clientId = runtime.config.clientId;
       if (!clientId || !runtime.config.perGuildSlash) return;
       try {
-        await runtime.registerSlashCommands(clientId, allSlashCommands, { guilds: [guild] });
+        await runtime.registerSlashCommands(clientId, allSlashCommands.map(buildCommandBody), { guilds: [guild] });
       } catch (e) {
         console.error(`[spinning_core] Failed to register in ${guild.name}:`, e.message);
       }
